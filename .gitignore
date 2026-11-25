@@ -1,0 +1,12 @@
+# Du lieu ca nhan / sinh ra luc chay
+config.json
+todos.json
+positions.json
+hub_note.json
+*.tmp
+server.log
+books/
+inbox/
+outbox/
+*.lnk
+__pycache__/
