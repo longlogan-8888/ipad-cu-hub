@@ -1,0 +1,13 @@
+{
+  "port": 8765,
+  "pin": "1234",
+  "apps": [
+    {"name": "File Explorer", "icon": "explorer", "cmd": "explorer"},
+    {"name": "Chrome", "icon": "chrome", "cmd": "start chrome"},
+    {"name": "YouTube", "icon": "youtube", "cmd": "start https://www.youtube.com"},
+    {"name": "Claude", "icon": "claude", "cmd": "start \"\" \"%LOCALAPPDATA%\\AnthropicClaude\\claude.exe\""}
+  ],
+  "weather": {"city": "TP.HCM", "lat": 10.8231, "lon": 106.6297, "timezone": "Asia/Ho_Chi_Minh"},
+  "library": ["books"],
+  "hub": {"inbox": "inbox", "outbox": "outbox"}
+}

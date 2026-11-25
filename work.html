@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Công việc">
+<title>Công việc</title>
+<style>
+  * { -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0); }
+  html, body { margin: 0; padding: 0; background: #14161a; color: #e8e8e8; font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  body { padding: 14px 14px 30px; -webkit-transition: background .3s; transition: background .3s; }
+  body.alarm { background: #5a1f1f; }
+  #nav { float: right; margin-top: 2px; }
+  #nav a { color: #7d8590; text-decoration: none; font-size: 15px; padding: 6px 12px; border: 1px solid #2d333b; border-radius: 8px; margin-left: 6px; }
+  #nav a.on { color: #fff; background: #2d333b; }
+  h1 { font-size: 22px; font-weight: 600; margin: 4px 4px 14px; color: #fff; }
+  h1 small { font-size: 15px; color: #7d8590; font-weight: 400; margin-left: 8px; }
+  table.cols { width: 100%; border-collapse: collapse; }
+  table.cols > tbody > tr > td { vertical-align: top; }
+  #left { width: 42%; padding-right: 14px; }
+  .card { background: #1f2329; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+  .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #7d8590; margin: 0 0 10px; font-weight: 600; }
+  .card h2 span { float: right; text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+  /* Pomodoro */
+  #pMode { text-align: center; font-size: 17px; color: #ff8a65; }
+  #pMode.rest { color: #66bb6a; }
+  #pTime { text-align: center; font-size: 84px; font-weight: 200; line-height: 1.1; margin: 4px 0 8px; }
+  #pBar { height: 6px; background: #2d333b; border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+  #pBar div { height: 6px; background: #ff8a65; width: 0; }
+  #pBar.rest div { background: #66bb6a; }
+  .btns { overflow: hidden; margin: 0 -4px; }
+  .btns a { float: left; width: 33.333%; padding: 0 4px; text-decoration: none; }
+  .btns a span { display: block; height: 52px; line-height: 52px; text-align: center; border-radius: 10px; background: #2d333b; color: #fff; font-size: 17px; }
+  .btns a.main span { background: #2f6fe4; }
+  .btns a:active span { background: #4a5260; }
+  #pCount { text-align: center; color: #7d8590; font-size: 14px; margin-top: 10px; }
+
+  /* May tinh */
+  .stat { margin-bottom: 10px; }
+  .stat .lb { font-size: 14px; color: #b8bec7; overflow: hidden; }
+  .stat .lb b { float: right; font-weight: 600; color: #fff; }
+  .bar { height: 8px; background: #2d333b; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+  .bar div { height: 8px; width: 0; border-radius: 4px; background: #4caf50; -webkit-transition: width .6s; transition: width .6s; }
+  .bar div.mid { background: #ffb300; } .bar div.hi { background: #e53935; }
+  #cpuChart { display: block; width: 100%; height: 50px; margin-top: 6px; }
+  #upt { font-size: 13px; color: #7d8590; }
+
+  /* Viec can lam */
+  #addForm { overflow: hidden; margin-bottom: 10px; }
+  #addForm input { float: left; width: 78%; height: 50px; font-size: 18px; padding: 0 12px; border-radius: 10px; border: 1px solid #3a414b; background: #14161a; color: #fff; -webkit-appearance: none; }
+  #addForm button { float: right; width: 20%; height: 50px; font-size: 17px; border: 0; border-radius: 10px; background: #2f6fe4; color: #fff; -webkit-appearance: none; }
+  #list { margin: 0; padding: 0; list-style: none; }
+  #list li { position: relative; border-top: 1px solid #2a2f36; }
+  #list li .t { display: block; padding: 15px 56px 15px 46px; font-size: 18px; color: #e8e8e8; text-decoration: none; line-height: 1.35; word-wrap: break-word; }
+  #list li .t:before { content: ''; position: absolute; left: 6px; top: 13px; width: 24px; height: 24px; border: 2px solid #5c6570; border-radius: 50%; }
+  #list li.done .t { color: #5c6570; text-decoration: line-through; }
+  #list li.done .t:before { background: #4caf50; border-color: #4caf50; }
+  #list li .x { position: absolute; right: 0; top: 0; width: 50px; height: 100%; min-height: 50px; line-height: 50px; text-align: center; color: #5c6570; font-size: 26px; text-decoration: none; }
+  #list .empty { color: #7d8590; padding: 14px 4px; font-size: 15px; border: 0; }
+  #clearDone { display: none; margin-top: 10px; color: #7d8590; font-size: 14px; text-decoration: none; padding: 8px 0; }
+
+  #pinbox { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #14161a; padding-top: 120px; text-align: center; z-index: 9; }
+  #pinbox input { font-size: 32px; width: 220px; text-align: center; padding: 10px; border-radius: 10px; border: 1px solid #444; background: #1f2329; color: #fff; letter-spacing: 8px; }
+  #pinbox button { display: block; margin: 18px auto 0; font-size: 20px; padding: 12px 50px; border: 0; border-radius: 10px; background: #2f6fe4; color: #fff; }
+  #pinbox p { color: #7d8590; }
+
+  @media (orientation: portrait) {
+    #left, #right { display: block; width: 100%; padding-right: 0; }
+  }
+</style>
+</head>
+<body ontouchstart="">
+
+<div id="nav"><a href="/clock">Đồng hồ</a><a href="/work" class="on">Công việc</a><a href="/books">Sách</a><a href="/hub">Hub</a><a href="/">Remote</a></div>
+<h1>Công việc <small id="clock"></small></h1>
+
+<table class="cols"><tr>
+  <td id="left">
+    <div class="card">
+      <h2>Pomodoro</h2>
+      <div id="pMode">Tập trung</div>
+      <div id="pTime">25:00</div>
+      <div id="pBar"><div></div></div>
+      <div class="btns">
+        <a href="#" id="pStart" class="main"><span>Bắt đầu</span></a>
+        <a href="#" id="pReset"><span>Đặt lại</span></a>
+        <a href="#" id="pSkip"><span>Bỏ qua</span></a>
+      </div>
+      <div id="pCount"></div>
+    </div>
+
+    <div class="card">
+      <h2>Máy tính <span id="host"></span></h2>
+      <div class="stat"><div class="lb">CPU <b id="cpuV">-</b></div><canvas id="cpuChart"></canvas></div>
+      <div class="stat"><div class="lb">RAM <b id="ramV">-</b></div><div class="bar"><div id="ramB"></div></div></div>
+      <div id="disks"></div>
+      <div id="upt"></div>
+    </div>
+  </td>
+
+  <td id="right">
+    <div class="card">
+      <h2>Việc cần làm <span id="todoCount"></span></h2>
+      <form id="addForm"><input id="newTodo" type="text" maxlength="200" placeholder="Thêm việc..." autocomplete="off"><button type="submit">Thêm</button></form>
+      <ul id="list"><li class="empty">Đang tải...</li></ul>
+      <a href="#" id="clearDone">Xóa các việc đã xong</a>
+    </div>
+  </td>
+</tr></table>
+
+<div id="pinbox">
+  <h1>Nhập mã PIN</h1>
+  <p>Mã PIN giống bên Remote</p>
+  <input id="pin" type="tel" maxlength="12">
+  <button id="pinok">OK</button>
+</div>
+
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} return null; }
+  function tap(el, fn) { el.onclick = function (e) { e.preventDefault(); fn(); }; }
+
+  // ---------- Dong ho nho ----------
+  function clock() {
+    var d = new Date();
+    $('clock').innerHTML = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' · ' + d.getDate() + '/' + (d.getMonth() + 1);
+  }
+  clock(); setInterval(clock, 10000);
+
+  // ---------- Pomodoro ----------
+  var DUR = { focus: 25, short: 5, long: 15 };
+  var LABEL = { focus: 'Tập trung', short: 'Nghỉ ngắn', long: 'Nghỉ dài' };
+  function today() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+  var P = null;
+  try { P = JSON.parse(store('pomo')); } catch (e) {}
+  if (!P || !DUR[P.mode]) P = { mode: 'focus', running: false, endAt: 0, remain: DUR.focus * 60000, count: 0, day: today() };
+  function saveP() { store('pomo', JSON.stringify(P)); }
+
+  var actx = null;
+  function unlockAudio() {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC || actx) return;
+    actx = new AC();
+    var b = actx.createBuffer(1, 1, 22050), s = actx.createBufferSource();
+    s.buffer = b; s.connect(actx.destination);
+    if (s.start) s.start(0); else s.noteOn(0);
+  }
+  function beep() {
+    if (!actx) return;
+    for (var i = 0; i < 3; i++) {
+      var o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * 0.45;
+      o.frequency.value = 880; o.connect(g); g.connect(actx.destination);
+      g.gain.value = 0.4;
+      if (o.start) { o.start(t); o.stop(t + 0.25); } else { o.noteOn(t); o.noteOff(t + 0.25); }
+    }
+  }
+  var alarmTimer = null;
+  function alarm() {
+    beep();
+    var n = 0;
+    clearInterval(alarmTimer);
+    alarmTimer = setInterval(function () {
+      document.body.className = (n % 2 === 0) ? 'alarm' : '';
+      if (++n > 11) { clearInterval(alarmTimer); document.body.className = ''; }
+    }, 500);
+  }
+
+  function nextMode(finishedFocus) {
+    if (P.mode === 'focus') {
+      if (finishedFocus) { if (P.day !== today()) { P.day = today(); P.count = 0; } P.count++; }
+      P.mode = (P.count > 0 && P.count % 4 === 0) ? 'long' : 'short';
+    } else {
+      P.mode = 'focus';
+    }
+    P.running = false; P.remain = DUR[P.mode] * 60000;
+    saveP();
+  }
+
+  function renderP() {
+    var left = P.running ? P.endAt - Date.now() : P.remain;
+    if (P.running && left <= 0) { nextMode(true); alarm(); left = P.remain; }
+    var s = Math.ceil(Math.max(0, left) / 1000);
+    $('pTime').innerHTML = pad(Math.floor(s / 60)) + ':' + pad(s % 60);
+    var rest = P.mode !== 'focus';
+    $('pMode').innerHTML = LABEL[P.mode];
+    $('pMode').className = rest ? 'rest' : '';
+    $('pBar').className = rest ? 'rest' : '';
+    $('pBar').firstChild.style.width = (100 - 100 * left / (DUR[P.mode] * 60000)) + '%';
+    $('pStart').firstChild.innerHTML = P.running ? 'Tạm dừng' : (left < DUR[P.mode] * 60000 ? 'Tiếp tục' : 'Bắt đầu');
+    var c = P.day === today() ? P.count : 0, dots = '';
+    for (var i = 0; i < c; i++) dots += '🍅';
+    $('pCount').innerHTML = c ? 'Hôm nay: ' + dots + ' (' + c + ')' : 'Hôm nay chưa có phiên nào';
+  }
+  tap($('pStart'), function () {
+    unlockAudio();
+    if (P.running) { P.remain = Math.max(0, P.endAt - Date.now()); P.running = false; }
+    else { P.endAt = Date.now() + P.remain; P.running = true; }
+    saveP(); renderP();
+  });
+  tap($('pReset'), function () { P.running = false; P.remain = DUR[P.mode] * 60000; saveP(); renderP(); });
+  tap($('pSkip'), function () { nextMode(false); renderP(); });
+  renderP(); setInterval(renderP, 500);
+
+  // ---------- Thong so may tinh ----------
+  function gb(b) { return (b / 1073741824).toFixed(b >= 107374182400 ? 0 : 1); }
+  function lvl(p) { return p >= 85 ? 'hi' : p >= 60 ? 'mid' : ''; }
+  function bar(p) { return '<div class="bar"><div class="' + lvl(p) + '" style="width:' + p + '%"></div></div>'; }
+  function drawCpu(h) {
+    var cv = $('cpuChart'), r = window.devicePixelRatio || 1;
+    var w = cv.offsetWidth * r, ht = cv.offsetHeight * r;
+    if (cv.width !== w) { cv.width = w; cv.height = ht; }
+    var c = cv.getContext('2d'), n = 60, bw = w / n;
+    c.clearRect(0, 0, w, ht);
+    c.fillStyle = '#2d333b'; c.fillRect(0, 0, w, ht);
+    for (var i = 0; i < h.length; i++) {
+      var v = h[i], bh = Math.max(1, ht * v / 100);
+      c.fillStyle = v >= 85 ? '#e53935' : v >= 60 ? '#ffb300' : '#4caf50';
+      c.fillRect((n - h.length + i) * bw, ht - bh, Math.max(1, bw - r), bh);
+    }
+  }
+  function uptime(s) {
+    var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+    return 'Đã bật ' + (d ? d + ' ngày ' : '') + (d || h ? h + ' giờ ' : '') + (d ? '' : m + ' phút');
+  }
+  function loadStats() {
+    var x = new XMLHttpRequest();
+    x.open('GET', '/api/stats?_=' + Date.now(), true);
+    x.timeout = 5000;
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) return;
+      var s = null;
+      try { s = JSON.parse(x.responseText); } catch (e) {}
+      if (!s) { $('upt').innerHTML = 'Mất kết nối tới máy tính'; return; }
+      $('host').innerHTML = esc(s.host);
+      $('cpuV').innerHTML = s.cpu + '%';
+      drawCpu(s.cpuHist);
+      var rp = Math.round(100 * s.ramUsed / s.ramTotal);
+      $('ramV').innerHTML = gb(s.ramUsed) + ' / ' + gb(s.ramTotal) + ' GB';
+      $('ramB').className = lvl(rp); $('ramB').style.width = rp + '%';
+      var html = '';
+      for (var i = 0; i < s.disks.length; i++) {
+        var d = s.disks[i], p = Math.round(100 * d.used / d.total);
+        html += '<div class="stat"><div class="lb">Ổ ' + esc(d.name) + ' <b>còn trống ' + gb(d.total - d.used) + ' GB</b></div>' + bar(p) + '</div>';
+      }
+      $('disks').innerHTML = html;
+      $('upt').innerHTML = uptime(s.uptime);
+    };
+    x.send(null);
+  }
+  loadStats(); setInterval(loadStats, 2000);
+
+  // ---------- Viec can lam ----------
+  var pin = store('pcremote_pin') || '';
+  function api(path, body, cb) {
+    var x = new XMLHttpRequest();
+    x.open('POST', '/api/todos/' + path, true);
+    x.setRequestHeader('X-Pin', pin);
+    x.setRequestHeader('Content-Type', 'application/json');
+    x.timeout = 5000;
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) return;
+      if (x.status === 401) { $('pinbox').style.display = 'block'; return; }
+      var d = null;
+      try { d = JSON.parse(x.responseText); } catch (e) {}
+      if (d && d.todos) renderTodos(d.todos);
+    };
+    x.send(JSON.stringify(body || {}));
+  }
+  function renderTodos(t) {
+    var html = '', left = 0, done = 0;
+    for (var i = 0; i < t.length; i++) {
+      if (t[i].done) done++; else left++;
+      html += '<li' + (t[i].done ? ' class="done"' : '') + '><a href="#" class="t" data-id="' + t[i].id + '">' + esc(t[i].text) +
+        '</a><a href="#" class="x" data-del="' + t[i].id + '">&times;</a></li>';
+    }
+    $('list').innerHTML = html || '<li class="empty">Chưa có việc nào. Gõ vào ô trên để thêm.</li>';
+    $('todoCount').innerHTML = t.length ? 'còn ' + left + ' việc' : '';
+    $('clearDone').style.display = done ? 'inline-block' : 'none';
+  }
+  $('list').onclick = function (e) {
+    var el = e.target;
+    while (el && el !== this && !el.getAttribute('data-id') && !el.getAttribute('data-del')) el = el.parentNode;
+    if (!el || el === this) return;
+    e.preventDefault();
+    if (el.getAttribute('data-del')) {
+      if (window.confirm('Xóa việc này?')) api('del', { id: +el.getAttribute('data-del') });
+    } else {
+      api('toggle', { id: +el.getAttribute('data-id') });
+    }
+  };
+  $('addForm').onsubmit = function (e) {
+    e.preventDefault();
+    var v = $('newTodo').value.replace(/^\s+|\s+$/g, '');
+    if (!v) return;
+    api('add', { text: v });
+    $('newTodo').value = '';
+    $('newTodo').blur();
+  };
+  tap($('clearDone'), function () { api('clear'); });
+  $('pinok').onclick = function () {
+    pin = $('pin').value; store('pcremote_pin', pin);
+    $('pinbox').style.display = 'none';
+    api('list');
+  };
+  api('list');
+  setInterval(function () { if (document.activeElement !== $('newTodo')) api('list'); }, 30000);
+})();
+</script>
+</body>
+</html>

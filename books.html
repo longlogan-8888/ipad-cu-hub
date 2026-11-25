@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Sách">
+<title>Sách</title>
+<style>
+  * { -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0); }
+  html, body { margin: 0; padding: 0; background: #14161a; color: #e8e8e8; font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  body { padding: 14px 14px 30px; }
+  #nav { float: right; margin-top: 2px; }
+  #nav a { color: #7d8590; text-decoration: none; font-size: 15px; padding: 6px 12px; border: 1px solid #2d333b; border-radius: 8px; margin-left: 6px; }
+  #nav a.on { color: #fff; background: #2d333b; }
+  h1 { font-size: 22px; font-weight: 600; margin: 4px 4px 14px; color: #fff; }
+  h1 small { font-size: 15px; color: #7d8590; font-weight: 400; margin-left: 8px; }
+  #grid { overflow: hidden; margin: 0 -7px; }
+  .bk { float: left; width: 50%; padding: 0 7px 14px; text-decoration: none; color: inherit; }
+  .bk > div { background: #1f2329; border-radius: 12px; padding: 12px; height: 150px; overflow: hidden; position: relative; }
+  .bk:active > div { background: #2a2f36; }
+  .cv { float: left; width: 84px; height: 126px; border-radius: 6px; background: #2d333b center center no-repeat; background-size: cover; margin-right: 14px; text-align: center; line-height: 126px; font-size: 15px; font-weight: 700; color: #9aa3ad; }
+  .cv.pdf { background-color: #5a2a2a; color: #f0b3b3; }
+  .cv.epub { background-color: #24405e; color: #a9c8ea; }
+  .tt { font-size: 18px; font-weight: 600; line-height: 1.3; max-height: 70px; overflow: hidden; color: #fff; }
+  .au { font-size: 14px; color: #8a929c; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pr { position: absolute; left: 110px; right: 12px; bottom: 14px; }
+  .pr .bar { height: 5px; background: #2d333b; border-radius: 3px; overflow: hidden; }
+  .pr .bar div { height: 5px; background: #4caf50; }
+  .pr span { font-size: 12px; color: #7d8590; display: block; margin-bottom: 5px; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #2d333b; color: #9aa3ad; margin-top: 6px; }
+  .bk.first > div { box-shadow: inset 0 0 0 2px #2f6fe4; }
+  #msg { color: #8a929c; font-size: 15px; line-height: 1.6; padding: 10px 4px; }
+  #msg code { background: #1f2329; padding: 2px 6px; border-radius: 4px; color: #e8e8e8; word-break: break-all; }
+  #pinbox { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #14161a; padding-top: 120px; text-align: center; z-index: 9; }
+  #pinbox input { font-size: 32px; width: 220px; text-align: center; padding: 10px; border-radius: 10px; border: 1px solid #444; background: #1f2329; color: #fff; letter-spacing: 8px; }
+  #pinbox button { display: block; margin: 18px auto 0; font-size: 20px; padding: 12px 50px; border: 0; border-radius: 10px; background: #2f6fe4; color: #fff; }
+  #pinbox p { color: #7d8590; }
+  @media (max-width: 700px) { .bk { width: 100%; } }
+</style>
+</head>
+<body ontouchstart="">
+
+<div id="nav"><a href="/clock">Đồng hồ</a><a href="/work">Công việc</a><a href="/books" class="on">Sách</a><a href="/hub">Hub</a><a href="/">Remote</a></div>
+<h1>Thư viện <small id="count"></small></h1>
+
+<div id="grid"></div>
+<div id="msg">Đang tải...</div>
+
+<div id="pinbox">
+  <h1>Nhập mã PIN</h1>
+  <p>Mã PIN giống bên Remote</p>
+  <input id="pin" type="tel" maxlength="12">
+  <button id="pinok">OK</button>
+</div>
+
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  var pin = '';
+  try { pin = localStorage.getItem('pcremote_pin') || ''; } catch (e) {}
+  function setCookie() { document.cookie = 'pcpin=' + encodeURIComponent(pin) + '; path=/; max-age=31536000'; }
+  if (pin) setCookie();
+
+  function load() {
+    var x = new XMLHttpRequest();
+    x.open('GET', '/api/books?_=' + Date.now(), true);
+    x.setRequestHeader('X-Pin', pin);
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) return;
+      if (x.status === 401) { $('pinbox').style.display = 'block'; return; }
+      var d = null;
+      try { d = JSON.parse(x.responseText); } catch (e) {}
+      if (!d) { $('msg').innerHTML = 'Mất kết nối tới máy tính'; return; }
+      render(d);
+    };
+    x.send(null);
+  }
+
+  function render(d) {
+    var html = '', b, i;
+    for (i = 0; i < d.books.length; i++) {
+      b = d.books[i];
+      var href = b.mode === 'native' ? '/api/books/' + b.id + '/file' : (b.mode === 'broken' ? '#' : '/read?id=' + b.id);
+      var target = b.mode === 'native' ? ' target="_blank"' : '';
+      var cover = b.cover
+        ? '<div class="cv" style="background-image:url(/api/books/' + b.id + '/cover)"></div>'
+        : '<div class="cv ' + b.type + '">' + b.type.toUpperCase() + '</div>';
+      var bottom = b.mode === 'native' ? '<span class="tag">Mở bằng Safari</span>'
+        : b.mode === 'broken' ? '<span class="tag">Không đọc được file này</span>'
+        : '<span>' + (b.progress ? 'Đã đọc ' + b.progress + '%' : 'Chưa đọc') + '</span><div class="bar"><div style="width:' + b.progress + '%"></div></div>';
+      html += '<a class="bk' + (i === 0 && b.last ? ' first' : '') + '" href="' + href + '"' + target + '><div>' + cover +
+        '<div class="tt">' + esc(b.title) + '</div>' + (b.author ? '<div class="au">' + esc(b.author) + '</div>' : '') +
+        '<div class="pr">' + bottom + '</div></div></a>';
+    }
+    $('grid').innerHTML = html;
+    $('count').innerHTML = d.books.length ? d.books.length + ' cuốn' : '';
+    if (!d.books.length) {
+      var f = '';
+      for (i = 0; i < d.folders.length; i++) f += '<br><code>' + esc(d.folders[i]) + '</code>';
+      $('msg').innerHTML = 'Chưa có sách nào. Chép file <b>.epub</b> hoặc <b>.pdf</b> vào thư mục trên máy tính:' + f +
+        '<br>rồi tải lại trang này.';
+    } else {
+      $('msg').innerHTML = '';
+    }
+  }
+
+  $('pinok').onclick = function () {
+    pin = $('pin').value;
+    try { localStorage.setItem('pcremote_pin', pin); } catch (e) {}
+    setCookie();
+    $('pinbox').style.display = 'none';
+    load();
+  };
+  load();
+})();
+</script>
+</body>
+</html>

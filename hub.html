@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Hub">
+<title>Hub</title>
+<style>
+  * { -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0); }
+  html, body { margin: 0; padding: 0; background: #14161a; color: #e8e8e8; font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  body { padding: 14px 14px 30px; }
+  #nav { float: right; margin-top: 2px; }
+  #nav a { color: #7d8590; text-decoration: none; font-size: 15px; padding: 6px 12px; border: 1px solid #2d333b; border-radius: 8px; margin-left: 6px; }
+  #nav a.on { color: #fff; background: #2d333b; }
+  h1 { font-size: 22px; font-weight: 600; margin: 4px 4px 14px; color: #fff; }
+  table.cols { width: 100%; border-collapse: collapse; }
+  table.cols > tbody > tr > td { vertical-align: top; }
+  #left { width: 50%; padding-right: 14px; }
+  .card { background: #1f2329; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+  .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #7d8590; margin: 0 0 12px; font-weight: 600; overflow: hidden; }
+  .card h2 a { float: right; text-transform: none; letter-spacing: 0; font-weight: 400; color: #5fa8ff; text-decoration: none; font-size: 14px; margin-left: 14px; }
+  .sub { font-size: 13px; color: #7d8590; margin: 12px 0 8px; }
+
+  /* Gui len */
+  #pick { position: relative; display: block; height: 64px; line-height: 64px; text-align: center; border-radius: 12px; background: #2f6fe4; color: #fff; font-size: 19px; overflow: hidden; }
+  #pick input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; font-size: 200px; }
+  #queue { margin-top: 10px; }
+  .q { font-size: 14px; color: #b8bec7; margin-bottom: 8px; overflow: hidden; }
+  .q b { float: right; font-weight: 400; color: #7d8590; }
+  .q b.ok { color: #66bb6a; } .q b.err { color: #ef5350; }
+  .pbar { height: 5px; background: #2d333b; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+  .pbar div { height: 5px; width: 0; background: #2f6fe4; }
+
+  /* Luoi anh */
+  .grid { overflow: hidden; margin: 0 -4px; }
+  .tile { float: left; width: 25%; padding: 4px; position: relative; }
+  .tile a.del { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; line-height: 30px; padding: 0; text-align: center; border-radius: 16px;
+                background: rgba(0,0,0,.7); color: #fff; font-size: 22px; z-index: 2; border: 1px solid rgba(255,255,255,.35); }
+  .tile a.del:active { background: #c62828; }
+  #staged { margin-top: 10px; }
+  #sendBar { display: none; overflow: hidden; margin-top: 4px; }
+  #sendBar a { float: left; height: 50px; line-height: 50px; padding: 0 22px; border-radius: 10px; background: #2d333b; color: #fff; text-decoration: none; font-size: 17px; margin-right: 8px; }
+  #sendBar a.main { background: #2e7d32; }
+  #sendBar span { float: right; font-size: 13px; color: #7d8590; line-height: 50px; }
+  .tile a { display: block; position: relative; padding-top: 100%; border-radius: 8px; overflow: hidden; background: #2d333b center center no-repeat; background-size: cover; color: #cfd3d8; text-decoration: none; }
+  .tile a span { position: absolute; left: 0; right: 0; bottom: 0; padding: 4px 6px; font-size: 11px; background: rgba(0,0,0,.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile a i { position: absolute; top: 50%; left: 0; right: 0; margin-top: -18px; text-align: center; font-style: normal; font-size: 26px; line-height: 36px; }
+  .empty { color: #7d8590; font-size: 14px; padding: 6px 2px; line-height: 1.6; }
+  .empty code { background: #14161a; padding: 2px 6px; border-radius: 4px; color: #cfd3d8; word-break: break-all; }
+
+  /* Ghi chu */
+  #note { width: 100%; height: 170px; font-size: 17px; line-height: 1.4; padding: 10px; border-radius: 10px; border: 1px solid #3a414b; background: #14161a; color: #fff; -webkit-appearance: none; resize: vertical; font-family: inherit; }
+  .row2 { overflow: hidden; margin-top: 8px; }
+  .row2 a.b { float: left; padding: 0 16px; height: 42px; line-height: 42px; border-radius: 9px; background: #2d333b; color: #fff; text-decoration: none; font-size: 15px; margin-right: 8px; }
+  #noteSt { float: right; font-size: 13px; color: #7d8590; line-height: 42px; }
+  #links a { display: block; color: #5fa8ff; font-size: 14px; padding: 6px 0; word-break: break-all; }
+
+  /* Xem anh lon */
+  #viewer { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; z-index: 8; text-align: center; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  #viewer img { max-width: 100%; margin-top: 56px; -webkit-touch-callout: default; }
+  #viewer .top { position: fixed; top: 0; left: 0; right: 0; height: 50px; line-height: 50px; background: rgba(0,0,0,.75); color: #cfd3d8; font-size: 14px; }
+  #viewer .top a { position: absolute; right: 10px; top: 6px; height: 38px; line-height: 38px; padding: 0 16px; border-radius: 8px; background: #2d333b; color: #fff; text-decoration: none; font-size: 15px; }
+
+  #toast { position: fixed; left: 50%; bottom: 24px; width: 320px; margin-left: -160px; background: rgba(0,0,0,.85); color: #fff; text-align: center; padding: 12px; border-radius: 10px; font-size: 15px; opacity: 0; -webkit-transition: opacity .25s; transition: opacity .25s; pointer-events: none; z-index: 9; }
+  #toast.show { opacity: 1; }
+  #pinbox { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #14161a; padding-top: 120px; text-align: center; z-index: 10; }
+  #pinbox input { font-size: 32px; width: 220px; text-align: center; padding: 10px; border-radius: 10px; border: 1px solid #444; background: #1f2329; color: #fff; letter-spacing: 8px; }
+  #pinbox button { display: block; margin: 18px auto 0; font-size: 20px; padding: 12px 50px; border: 0; border-radius: 10px; background: #2f6fe4; color: #fff; }
+  #pinbox p { color: #7d8590; }
+
+  @media (orientation: portrait) { #left, #right { display: block; width: 100%; padding-right: 0; } }
+</style>
+</head>
+<body ontouchstart="">
+
+<div id="nav"><a href="/clock">Đồng hồ</a><a href="/work">Công việc</a><a href="/books">Sách</a><a href="/hub" class="on">Hub</a><a href="/">Remote</a></div>
+<h1>Hub trung chuyển</h1>
+
+<table class="cols"><tr>
+  <td id="left">
+    <div class="card">
+      <h2>Gửi lên máy tính <a href="#" id="openIn">Mở thư mục trên máy tính</a></h2>
+      <label id="pick">Chọn ảnh / video<input id="file" type="file" multiple></label>
+      <div class="grid" id="staged"></div>
+      <div id="sendBar"><a href="#" class="main" id="sendBtn">Gửi</a><a href="#" id="dropAll">Bỏ hết</a><span>Bấm × để bỏ ảnh chọn nhầm</span></div>
+      <div id="queue"></div>
+      <div class="sub">Mới nhận trên máy tính</div>
+      <div class="grid" id="inbox"><div class="empty">Đang tải...</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Ghi chú chung</h2>
+      <textarea id="note" placeholder="Dán chữ hoặc link vào đây, bên kia sẽ thấy ngay..."></textarea>
+      <div class="row2">
+        <a href="#" class="b" id="selAll">Chọn hết</a>
+        <a href="#" class="b" id="copy">Sao chép</a>
+        <a href="#" class="b" id="clear">Xóa</a>
+        <span id="noteSt"></span>
+      </div>
+      <div id="links"></div>
+    </div>
+  </td>
+
+  <td id="right">
+    <div class="card">
+      <h2>Từ máy tính sang iPad <a href="#" id="openOut">Mở thư mục trên máy tính</a><a href="#" id="refresh">Tải lại</a></h2>
+      <div class="grid" id="outbox"><div class="empty">Đang tải...</div></div>
+    </div>
+  </td>
+</tr></table>
+
+<div id="viewer"><div class="top">Nhấn giữ ảnh → <b>Lưu hình ảnh</b> để lưu vào Ảnh<a href="#" id="vClose">Đóng</a></div><img id="vImg" alt=""></div>
+<div id="toast"></div>
+
+<div id="pinbox">
+  <h1>Nhập mã PIN</h1>
+  <p>Mã PIN giống bên Remote</p>
+  <input id="pin" type="tel" maxlength="12">
+  <button id="pinok">OK</button>
+</div>
+
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function tap(el, fn) { el.onclick = function (e) { e.preventDefault(); fn(); }; }
+  function size(b) { return b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+  var toastT = null;
+  function toast(m) { var t = $('toast'); t.innerHTML = m; t.className = 'show'; clearTimeout(toastT); toastT = setTimeout(function () { t.className = ''; }, 1800); }
+
+  var pin = '';
+  try { pin = localStorage.getItem('pcremote_pin') || ''; } catch (e) {}
+  function setCookie() { document.cookie = 'pcpin=' + encodeURIComponent(pin) + '; path=/; max-age=31536000'; }
+  if (pin) setCookie();
+
+  function xhr(method, url, body, cb) {
+    var x = new XMLHttpRequest();
+    x.open(method, url, true);
+    x.setRequestHeader('X-Pin', pin);
+    if (body) x.setRequestHeader('Content-Type', 'application/json');
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) return;
+      if (x.status === 401) { $('pinbox').style.display = 'block'; return; }
+      var d = null;
+      try { d = JSON.parse(x.responseText); } catch (e) {}
+      if (cb) cb(x.status === 200 ? d : null, x.status);
+    };
+    x.send(body ? JSON.stringify(body) : null);
+  }
+  function url(kind, box, p) { return '/api/hub/' + kind + '?box=' + box + '&p=' + encodeURIComponent(p); }
+
+  // ---------- Luoi file ----------
+  function tiles(items, box, max) {
+    var h = '';
+    for (var i = 0; i < items.length && i < max; i++) {
+      var it = items[i], label = esc(it.name);
+      if (it.kind === 'image') {
+        h += '<div class="tile"><a href="#" data-img="' + esc(it.path) + '" data-box="' + box + '" style="background-image:url(' + url('thumb', box, it.path) + ')"><span>' + label + '</span></a></div>';
+      } else {
+        var icon = it.kind === 'video' ? '▶' : it.kind === 'book' ? '📖' : '📄';
+        h += '<div class="tile"><a href="' + url('file', box, it.path) + '" target="_blank"><i>' + icon + '</i><span>' + label + ' · ' + size(it.size) + '</span></a></div>';
+      }
+    }
+    return h;
+  }
+  function loadBox(box) {
+    xhr('GET', '/api/hub/list?box=' + box + '&_=' + Date.now(), null, function (d) {
+      if (!d) return;
+      var h = tiles(d.items, box, box === 'inbox' ? 12 : 200);
+      $(box).innerHTML = h || (box === 'inbox'
+        ? '<div class="empty">Chưa nhận file nào.</div>'
+        : '<div class="empty">Chưa có file. Chép ảnh hoặc file vào thư mục này trên máy tính:<br><code>' + esc(d.folder) + '</code></div>');
+    });
+  }
+  function onGrid(e) {
+    var el = e.target;
+    while (el && el !== this && !el.getAttribute('data-img')) el = el.parentNode;
+    if (!el || el === this) return;
+    e.preventDefault();
+    $('vImg').src = url('file', el.getAttribute('data-box'), el.getAttribute('data-img'));
+    $('viewer').style.display = 'block';
+  }
+  $('inbox').onclick = onGrid;
+  $('outbox').onclick = onGrid;
+  tap($('vClose'), function () { $('viewer').style.display = 'none'; $('vImg').src = ''; });
+  tap($('refresh'), function () { loadBox('outbox'); toast('Đã tải lại'); });
+  tap($('openIn'), function () { xhr('POST', '/api/hub/open', { box: 'inbox' }, function (d) { if (d) toast(d.msg); }); });
+  tap($('openOut'), function () { xhr('POST', '/api/hub/open', { box: 'outbox' }, function (d) { if (d) toast(d.msg); }); });
+
+  // ---------- Chon file, xem lai, bo file chon nham ----------
+  var staged = [], URLo = window.URL || window.webkitURL;
+  function renderStaged() {
+    var h = '';
+    for (var i = 0; i < staged.length; i++) {
+      var f = staged[i].file, bg = staged[i].url ? ' style="background-image:url(' + staged[i].url + ')"' : '';
+      h += '<div class="tile"><a href="#"' + bg + '>' + (staged[i].url ? '' : '<i>▶</i>') +
+        '<span>' + esc(f.name) + ' · ' + size(f.size) + '</span></a><a href="#" class="del" data-rm="' + i + '">&times;</a></div>';
+    }
+    $('staged').innerHTML = h;
+    $('sendBar').style.display = staged.length ? 'block' : 'none';
+    $('sendBtn').innerHTML = 'Gửi ' + staged.length + ' file';
+    $('pick').firstChild.nodeValue = staged.length ? 'Chọn thêm ảnh / video' : 'Chọn ảnh / video';
+  }
+  function unstage(i) { if (staged[i].url) URLo.revokeObjectURL(staged[i].url); staged.splice(i, 1); }
+  $('file').onchange = function () {
+    var fs = this.files;
+    for (var i = 0; i < fs.length; i++) {
+      var isImg = /^image\//.test(fs[i].type) && URLo;
+      staged.push({ file: fs[i], url: isImg ? URLo.createObjectURL(fs[i]) : null });
+    }
+    this.value = '';
+    renderStaged();
+  };
+  $('staged').onclick = function (e) {
+    e.preventDefault();
+    var el = e.target;
+    while (el && el !== this && !el.getAttribute('data-rm')) el = el.parentNode;
+    if (!el || el === this) return;
+    unstage(+el.getAttribute('data-rm'));
+    renderStaged();
+  };
+  tap($('dropAll'), function () { while (staged.length) unstage(0); renderStaged(); });
+  tap($('sendBtn'), function () {
+    for (var i = 0; i < staged.length; i++) {
+      var f = staged[i].file, row = document.createElement('div');
+      row.className = 'q';
+      row.innerHTML = esc(f.name) + ' · ' + size(f.size) + '<b>Đang chờ</b><div class="pbar"><div></div></div>';
+      $('queue').appendChild(row);
+      queue.push({ file: f, row: row });
+    }
+    while (staged.length) unstage(0);
+    renderStaged();
+    next();
+  });
+
+  // ---------- Gui file len ----------
+  var queue = [], sending = false, okCount = 0;
+  function next() {
+    if (sending) return;
+    var job = queue.shift();
+    if (!job) { if (okCount) { toast('Đã gửi xong ' + okCount + ' file'); okCount = 0; } loadBox('inbox'); return; }
+    sending = true;
+    var st = job.row.getElementsByTagName('b')[0], bar = job.row.getElementsByTagName('div')[1];
+    var x = new XMLHttpRequest();
+    x.open('POST', '/api/hub/upload', true);
+    x.setRequestHeader('X-Pin', pin);
+    x.setRequestHeader('X-Filename', encodeURIComponent(job.file.name || 'image.jpg'));
+    x.setRequestHeader('Content-Type', job.file.type || 'application/octet-stream');
+    if (x.upload) x.upload.onprogress = function (e) {
+      if (e.lengthComputable) { var p = Math.round(100 * e.loaded / e.total); bar.style.width = p + '%'; st.innerHTML = p + '%'; }
+    };
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) return;
+      sending = false;
+      if (x.status === 401) { $('pinbox').style.display = 'block'; return; }
+      if (x.status === 200) { st.innerHTML = 'Xong ✓'; st.className = 'ok'; bar.style.width = '100%'; okCount++; }
+      else { st.innerHTML = 'Lỗi'; st.className = 'err'; }
+      next();
+    };
+    st.innerHTML = 'Đang gửi...';
+    x.send(job.file);
+  }
+
+  // ---------- Ghi chu chung ----------
+  var note = $('note'), lastText = null, saveT = null;
+  function showLinks(t) {
+    var m = t.match(/https?:\/\/[^\s<>"]+/g) || [], h = '';
+    for (var i = 0; i < m.length && i < 10; i++) h += '<a href="' + esc(m[i]) + '" target="_blank">' + esc(m[i]) + '</a>';
+    $('links').innerHTML = h;
+  }
+  function stamp(t) { var d = new Date(t * 1000); return (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes(); }
+  function pullNote() {
+    xhr('GET', '/api/hub/note?_=' + Date.now(), null, function (d) {
+      if (!d) return;
+      if (document.activeElement !== note && d.text !== lastText && saveT === null) {
+        note.value = d.text; lastText = d.text; showLinks(d.text);
+        $('noteSt').innerHTML = d.t ? 'Cập nhật ' + stamp(d.t) : '';
+      }
+    });
+  }
+  function pushNote() {
+    clearTimeout(saveT); saveT = null;
+    var t = note.value;
+    if (t === lastText) return;
+    $('noteSt').innerHTML = 'Đang lưu...';
+    xhr('POST', '/api/hub/note', { text: t }, function (d) {
+      if (d) { lastText = d.text; $('noteSt').innerHTML = 'Đã lưu ' + stamp(d.t); showLinks(d.text); }
+      else $('noteSt').innerHTML = 'Chưa lưu được';
+    });
+  }
+  note.oninput = function () { clearTimeout(saveT); saveT = setTimeout(pushNote, 800); };
+  note.onblur = pushNote;
+  tap($('selAll'), function () { note.focus(); note.setSelectionRange(0, note.value.length); });
+  tap($('copy'), function () {
+    note.focus(); note.setSelectionRange(0, note.value.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    toast(ok ? 'Đã sao chép' : 'Đã chọn hết chữ, bấm "Sao chép" trên menu hiện ra');
+  });
+  tap($('clear'), function () { if (window.confirm('Xóa toàn bộ ghi chú?')) { note.value = ''; pushNote(); } });
+
+  // ---------- Khoi dong ----------
+  function start() { loadBox('inbox'); loadBox('outbox'); pullNote(); }
+  $('pinok').onclick = function () {
+    pin = $('pin').value;
+    try { localStorage.setItem('pcremote_pin', pin); } catch (e) {}
+    setCookie();
+    $('pinbox').style.display = 'none';
+    start();
+  };
+  start();
+  setInterval(pullNote, 3000);
+  setInterval(function () { if (!sending) loadBox('outbox'); }, 20000);
+})();
+</script>
+</body>
+</html>

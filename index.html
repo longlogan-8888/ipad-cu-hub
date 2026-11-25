@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="PC Remote">
+<title>PC Remote</title>
+<style>
+  * { -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0); -webkit-user-select: none; }
+  html, body { margin: 0; padding: 0; background: #14161a; color: #e8e8e8; font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  body { padding: 16px 16px 40px; }
+  #nav { float: right; margin-top: 2px; }
+  #nav a { color: #7d8590; text-decoration: none; font-size: 15px; padding: 6px 12px; border: 1px solid #2d333b; border-radius: 8px; margin-left: 6px; }
+  #nav a.on { color: #fff; background: #2d333b; }
+  h1 { font-size: 22px; font-weight: 600; margin: 4px 4px 14px; color: #fff; }
+  h1 small { font-size: 14px; color: #7d8590; font-weight: 400; margin-left: 8px; }
+  .card { background: #1f2329; border-radius: 14px; padding: 12px 10px 4px; margin-bottom: 14px; }
+  .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #7d8590; margin: 0 6px 10px; font-weight: 600; }
+  .row { overflow: hidden; }
+  .btn { float: left; padding: 0 5px 10px; }
+  .w2 { width: 50%; } .w3 { width: 33.333%; } .w4 { width: 25%; } .w5 { width: 20%; }
+  .btn a { display: block; height: 76px; line-height: 76px; text-align: center; border-radius: 12px; background: #2d333b; color: #fff; font-size: 30px; text-decoration: none; }
+  .btn a.txt { font-size: 18px; }
+  .btn a.big { height: 110px; line-height: 110px; font-size: 44px; background: #2f6fe4; }
+  .btn a.warn { background: #6b3a1f; }
+  .btn a.danger { background: #7a2430; }
+  .btn a.ok { background: #1f5e3a; }
+  .btn a:active, .btn a.press { background: #4a5260; }
+  .btn a.big:active, .btn a.big.press { background: #5a8ff0; }
+  .lbl { display: block; font-size: 11px; color: #7d8590; text-align: center; margin-top: -6px; padding-bottom: 6px; }
+  #toast { position: fixed; left: 50%; bottom: 24px; width: 300px; margin-left: -150px; background: rgba(0,0,0,.85); color: #fff; text-align: center; padding: 12px; border-radius: 10px; font-size: 16px; opacity: 0; -webkit-transition: opacity .25s; transition: opacity .25s; pointer-events: none; }
+  #toast.show { opacity: 1; }
+  #pinbox { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #14161a; padding-top: 120px; text-align: center; }
+  #pinbox input { font-size: 32px; width: 220px; text-align: center; padding: 10px; border-radius: 10px; border: 1px solid #444; background: #1f2329; color: #fff; letter-spacing: 8px; -webkit-user-select: text; }
+  #pinbox button { display: block; margin: 18px auto 0; font-size: 20px; padding: 12px 50px; border: 0; border-radius: 10px; background: #2f6fe4; color: #fff; }
+  #pinbox p { color: #7d8590; }
+  #apps .empty { color: #7d8590; padding: 0 6px 12px; font-size: 14px; }
+</style>
+</head>
+<body ontouchstart="">
+
+<div id="nav"><a href="/clock">Đồng hồ</a><a href="/work">Công việc</a><a href="/books">Sách</a><a href="/hub">Hub</a><a href="/" class="on">Remote</a></div>
+<h1>PC Remote <small id="clock"></small></h1>
+
+<div class="card">
+  <h2>Mở ứng dụng</h2>
+  <div class="row" id="apps"><div class="empty">Đang tải...</div></div>
+</div>
+
+<div class="card">
+  <h2>Âm lượng</h2>
+  <div class="row">
+    <div class="btn w3"><a href="#" data-act="voldown/2" data-hold="1">&#128265; &minus;</a></div>
+    <div class="btn w3"><a href="#" data-act="mute">&#128263;</a></div>
+    <div class="btn w3"><a href="#" data-act="volup/2" data-hold="1">&#128266; +</a></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Phím điều khiển (YouTube, VLC...)</h2>
+  <div class="row">
+    <div class="btn w5"><a href="#" class="txt" data-act="esc">Esc</a></div>
+    <div class="btn w5"><a href="#" data-act="up" data-hold="1">&#9650;</a></div>
+    <div class="btn w5"><a href="#" class="txt" data-act="space">Space</a></div>
+    <div class="btn w5"><a href="#" class="txt" data-act="f">F</a></div>
+    <div class="btn w5"><a href="#" class="txt" data-act="f11">F11</a></div>
+  </div>
+  <div class="row">
+    <div class="btn w5"><a href="#" data-act="left" data-hold="1">&#9664;</a></div>
+    <div class="btn w5"><a href="#" data-act="down" data-hold="1">&#9660;</a></div>
+    <div class="btn w5"><a href="#" data-act="right" data-hold="1">&#9654;</a></div>
+    <div class="btn w5"><a href="#" class="txt" data-act="enter">Enter</a></div>
+    <div class="btn w5"><a href="#" class="txt" data-act="alttab">Alt+Tab</a></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Nhạc / Phim</h2>
+  <div class="row">
+    <div class="btn w4"><a href="#" data-act="prev">&#9198;</a></div>
+    <div class="btn w2"><a href="#" class="big" data-act="playpause">&#9199;</a></div>
+    <div class="btn w4"><a href="#" data-act="next">&#9197;</a></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Nguồn</h2>
+  <div class="row">
+    <div class="btn w5"><a href="#" class="txt" data-act="lock">Khóa</a></div>
+    <div class="btn w5"><a href="#" class="txt warn" data-act="sleep" data-confirm="Cho máy tính ngủ?">Ngủ</a></div>
+    <div class="btn w5"><a href="#" class="txt warn" data-act="restart" data-confirm="Khởi động lại máy sau 60 giây?">Restart</a></div>
+    <div class="btn w5"><a href="#" class="txt danger" data-act="shutdown" data-confirm="Tắt máy sau 60 giây?">Tắt máy</a></div>
+    <div class="btn w5"><a href="#" class="txt ok" data-act="cancel">Hủy tắt</a></div>
+  </div>
+</div>
+
+<div id="pinbox">
+  <h1>Nhập mã PIN</h1>
+  <p>Mã PIN hiện trong cửa sổ server trên máy tính</p>
+  <input id="pin" type="tel" maxlength="12">
+  <button id="pinok">OK</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function () {
+  var PIN_KEY = 'pcremote_pin';
+  var pin = '';
+  try { pin = localStorage.getItem(PIN_KEY) || ''; } catch (e) {}
+
+  var toastTimer = null;
+  function toast(msg) {
+    var t = document.getElementById('toast');
+    t.innerHTML = msg;
+    t.className = 'show';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.className = ''; }, 1400);
+  }
+
+  function api(path, cb) {
+    var x = new XMLHttpRequest();
+    x.open('POST', '/api/' + path, true);
+    x.setRequestHeader('X-Pin', pin);
+    x.timeout = 5000;
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) return;
+      if (x.status === 401) { askPin(); return; }
+      if (x.status === 0) { toast('Mất kết nối tới máy tính'); return; }
+      var d = {};
+      try { d = JSON.parse(x.responseText); } catch (e) {}
+      if (x.status !== 200) { toast(d.error || ('Lỗi ' + x.status)); return; }
+      if (cb) cb(d);
+    };
+    x.send('');
+  }
+
+  function askPin() {
+    document.getElementById('pinbox').style.display = 'block';
+    document.getElementById('pin').value = '';
+  }
+  document.getElementById('pinok').onclick = function () {
+    pin = document.getElementById('pin').value;
+    try { localStorage.setItem(PIN_KEY, pin); } catch (e) {}
+    document.getElementById('pinbox').style.display = 'none';
+    loadApps();
+  };
+
+  function send(el) {
+    var act = el.getAttribute('data-act');
+    var q = el.getAttribute('data-confirm');
+    if (q && !window.confirm(q)) return;
+    api(act, function (d) { if (d.msg && d.msg !== 'OK') toast(d.msg); });
+  }
+
+  // Bam giu de lap lai (am luong, mui ten)
+  function bind(el) {
+    var holdTimer = null, repeatTimer = null, fired = false;
+    var hold = el.getAttribute('data-hold');
+    function stop() {
+      clearTimeout(holdTimer); clearInterval(repeatTimer);
+      holdTimer = repeatTimer = null;
+      el.className = el.className.replace(/ ?press/g, '');
+    }
+    el.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      fired = false;
+      el.className += ' press';
+      if (hold) {
+        holdTimer = setTimeout(function () {
+          fired = true; send(el);
+          repeatTimer = setInterval(function () { send(el); }, 180);
+        }, 400);
+      }
+    }, false);
+    el.addEventListener('touchend', function (e) {
+      e.preventDefault();
+      var wasHeld = fired;
+      stop();
+      if (!wasHeld) send(el);
+    }, false);
+    el.addEventListener('touchcancel', stop, false);
+    // Chuot (khi thu tren may tinh)
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (!('ontouchstart' in window)) send(el);
+    }, false);
+  }
+
+  function bindAll() {
+    var links = document.querySelectorAll('a[data-act]');
+    for (var i = 0; i < links.length; i++) {
+      if (!links[i].getAttribute('data-bound')) {
+        links[i].setAttribute('data-bound', '1');
+        bind(links[i]);
+      }
+    }
+  }
+
+  // Icon ve bang SVG (Safari iOS 9 hien duoc), khoa = truong "icon" trong config.json
+  function svg(inner) { return '<svg width="46" height="46" viewBox="0 0 48 48" style="vertical-align:middle">' + inner + '</svg>'; }
+  var ICONS = {
+    explorer: function () {
+      return svg('<path d="M4 12a4 4 0 0 1 4-4h11l4 5h17a4 4 0 0 1 4 4v19a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z" fill="#e0a800"/>' +
+        '<path d="M4 18h40v18a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z" fill="#ffca28"/>');
+    },
+    chrome: function () {
+      return svg('<path d="M24 24L4.95 13A22 22 0 0 1 43.05 13z" fill="#ea4335"/>' +
+        '<path d="M24 24L43.05 13A22 22 0 0 1 24 46z" fill="#fbbc05"/>' +
+        '<path d="M24 24L24 46A22 22 0 0 1 4.95 13z" fill="#34a853"/>' +
+        '<circle cx="24" cy="24" r="10" fill="#fff"/><circle cx="24" cy="24" r="7.8" fill="#4285f4"/>');
+    },
+    youtube: function () {
+      return svg('<rect x="2" y="9" width="44" height="30" rx="9" fill="#ff0000"/><path d="M19 16v16l14-8z" fill="#fff"/>');
+    },
+    claude: function () {
+      var g = '';
+      for (var k = 0; k < 12; k++) {
+        var a = k * Math.PI / 6 + 0.13, r2 = k % 2 ? 17 : 21;
+        g += '<line x1="' + (24 + 4 * Math.cos(a)).toFixed(1) + '" y1="' + (24 + 4 * Math.sin(a)).toFixed(1) +
+          '" x2="' + (24 + r2 * Math.cos(a)).toFixed(1) + '" y2="' + (24 + r2 * Math.sin(a)).toFixed(1) + '"/>';
+      }
+      return svg('<g stroke="#d97757" stroke-width="4.6" stroke-linecap="round">' + g + '</g>');
+    }
+  };
+
+  function loadApps() {
+    api('apps', function (d) {
+      var box = document.getElementById('apps');
+      var html = '';
+      for (var i = 0; i < d.apps.length; i++) {
+        var name = d.apps[i].replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+        var ic = d.icons && ICONS[d.icons[i]];
+        html += '<div class="btn w4"><a href="#" class="' + (ic ? 'ico' : 'txt') + '" title="' + name + '" data-act="app' + i + '">' +
+          (ic ? ic() : name) + '</a></div>';
+      }
+      box.innerHTML = html || '<div class="empty">Chưa có app nào trong config.json</div>';
+      bindAll();
+    });
+  }
+
+  function tick() {
+    var d = new Date();
+    var h = d.getHours(), m = d.getMinutes();
+    document.getElementById('clock').innerHTML = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+  }
+  tick(); setInterval(tick, 10000);
+
+  bindAll();
+  if (!pin) askPin(); else loadApps();
+})();
+</script>
+</body>
+</html>

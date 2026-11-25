@@ -1,0 +1,3 @@
+# Khong bat buoc: chi can de doc PDF trong trinh doc (co nho trang, muc luc).
+# Thieu thi PDF se mo bang Safari.
+pymupdf
